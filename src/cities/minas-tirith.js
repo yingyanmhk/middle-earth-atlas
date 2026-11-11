@@ -202,11 +202,11 @@ export default function build({ rng, city, accent }) {
   wallRing(b, { x: 0, z: CIT.z, r: CIT.R, h: 1.5, t: 0.3, seg: 32, towers: 5, gate: CIT.gate, gateWidth: 0.1, color: C.ivory, towerCap: 'crenel', mat: M.stone });
   b.pop();
   // round plaza
-  b.disc(1.05, { x: 0, y: CIT.floor + 0.04, z: CIT.z, color: C.plaster, mat: M.smooth, seg: 24 });
+  b.cyl(1.05, 1.08, 0.08, { x: 0, y: CIT.floor + 0.02, z: CIT.z, color: C.plaster, mat: M.smooth, seg: 24 });
   // the White Tree and its small fountain
   const TY = CIT.floor + 0.06;
   b.torus(0.5, 0.05, { x: 0, y: TY, z: CIT.z, color: C.ivory, mat: M.stone, rseg: 6, tseg: 20 });
-  b.disc(0.43, { x: 0, y: TY + 0.01, z: CIT.z, color: '#9fb9c9', mat: M.water, seg: 20 });
+  b.cyl(0.43, 0.45, 0.06, { x: 0, y: TY - 0.01, z: CIT.z, color: '#9fb9c9', mat: M.water, seg: 20 });
   // silver trunk, pale withered crown
   b.cyl(0.035, 0.05, 0.85, { x: 0, y: TY + 0.02, z: CIT.z, color: C.silver, mat: M.smooth, seg: 7 });
   b.cyl(0.018, 0.026, 0.5, { x: 0.14, y: TY + 0.62, z: CIT.z + 0.06, rx: 0.3, ry: 0.5, color: C.silver, mat: M.smooth, seg: 6 });

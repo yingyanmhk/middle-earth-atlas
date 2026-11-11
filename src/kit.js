@@ -661,49 +661,87 @@ export function fbm(x, z, { oct = 4, seed = 0, gain = 0.5, lac = 2.0 } = {}) {
  * Build an organic terrain disc (radius `r`) into a Builder, merged into one
  * mesh. `height(x, z)` returns terrain height above y=0 (the plinth top).
  * `colorAt(x, z, h, up)` returns a hex string (optional: gradient by height /
- * slope). Skirt falls to `y` so the disc looks solid from the side.
+ * slope). `smooth` (default) shares vertices so normals smooth out the surface
+ * (soft meadows); pass `smooth: false` for a faceted rocky look. Double-sided,
+ * with a solid skirt down to `y`, so no hollow underside shows at low angles.
  */
-export function terrainDisc(b, { r = 10.5, rings = 56, segs = 96, height, colorAt = null, y = 0, mat = M.stone, seed = 0 }) {
-  const pos = [], col = [], idx = [];
-  const _c = new THREE.Color(), _t = new THREE.Color();
-  const P = (i, j) => {
-    const rr = (i / rings) * r;
-    const a = (j / segs) * Math.PI * 2;
-    const x = Math.cos(a) * rr, z = Math.sin(a) * rr;
-    return [x, y + height(x, z), z];
+export function terrainDisc(b, { r = 10.5, rings = 56, segs = 96, height, colorAt = null, y = 0, mat = M.stone, seed = 0, smooth = true }) {
+  const _c = new THREE.Color();
+  const isFlat = !smooth;
+  // vertex grid: center + rings x segs
+  const RINGS = rings, SEGS = segs;
+  const centerIdx = 0;
+  const ringStart = 1;
+  const nVerts = 1 + RINGS * SEGS;
+  const positions = new Float32Array(nVerts * 3);
+  const colors = new Float32Array(nVerts * 3);
+  const uvs = new Float32Array(nVerts * 2);
+  const setV = (idx, x, z, h, j) => {
+    positions[idx * 3] = x; positions[idx * 3 + 1] = y + h; positions[idx * 3 + 2] = z;
+    const c = colorAt ? colorAt(x, z, h, 1) : '#b7ab8f';
+    _c.set(c);
+    colors[idx * 3] = _c.r; colors[idx * 3 + 1] = _c.g; colors[idx * 3 + 2] = _c.b;
+    uvs[idx * 2] = j / SEGS; uvs[idx * 2 + 1] = 0.5;
   };
-  const tri = (p, q, w) => {
-    const ux = q[0] - p[0], uy = q[1] - p[1], uz = q[2] - p[2];
-    const vx = w[0] - p[0], vy = w[1] - p[1], vz = w[2] - p[2];
-    const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
-    const ln = Math.hypot(nx, ny, nz) || 1;
-    const up = Math.abs(ny / ln);
-    const h = (p[1] + q[1] + w[1]) / 3 - y;
-    const cx = (p[0] + q[0] + w[0]) / 3, cz = (p[2] + q[2] + w[2]) / 3;
-    _c.set(colorAt ? colorAt(cx, cz, h, up) : '#b7ab8f');
-    for (let k = 0; k < 3; k++) col.push(_c.r, _c.g, _c.b);
-    pos.push(...p, ...q, ...w);
-  };
-  for (let i = 0; i < rings; i++) {
-    for (let j = 0; j < segs; j++) {
-      const a = P(i, j), c = P(i + 1, j + 1);
-      if (i === 0) { tri(a, c, P(i + 1, j)); continue; }
-      tri(P(i + 1, j), c, a); tri(a, c, P(i, j + 1));
+  setV(centerIdx, 0, 0, height(0, 0), 0);
+  const ringIdx = (i, j) => ringStart + i * SEGS + j; // i 1..RINGS, j 0..SEGS-1
+  for (let i = 1; i <= RINGS; i++) {
+    const rr = (i / RINGS) * r;
+    for (let j = 0; j < SEGS; j++) {
+      const a = (j / SEGS) * Math.PI * 2;
+      setV(ringIdx(i, j), Math.cos(a) * rr, Math.sin(a) * rr, height(Math.cos(a) * rr, Math.sin(a) * rr), j);
     }
   }
-  // skirt down to y so no holes at the rim
-  for (let j = 0; j < segs; j++) {
-    const a = P(rings, j), d = P(rings, j + 1);
-    const a0 = [a[0], y, a[2]], d0 = [d[0], y, d[2]];
-    tri(a0, a, d); tri(a0, d, d0);
+  const idx = [];
+  // first ring: fans from the centre
+  for (let j = 0; j < SEGS; j++) {
+    const a = ringIdx(1, j), b = ringIdx(1, (j + 1) % SEGS);
+    idx.push(centerIdx, b, a);
   }
+  // upper rings: quads
+  for (let i = 1; i < RINGS; i++) {
+    for (let j = 0; j < SEGS; j++) {
+      const a = ringIdx(i, j), b = ringIdx(i, (j + 1) % SEGS);
+      const c = ringIdx(i + 1, j), d = ringIdx(i + 1, (j + 1) % SEGS);
+      idx.push(a, d, c, a, b, d);
+    }
+  }
+  // skirt: rim base vertices + faces down to y
+  const rimBase = nVerts;
+  const skirtV = new Float32Array(SEGS * 3 * 2); // 2 verts per segment: base + rim copy
+  const skirtCol = new Float32Array(SEGS * 3 * 2);
+  const skirtUv = new Float32Array(SEGS * 2 * 2);
+  for (let j = 0; j < SEGS; j++) {
+    const a = (j / SEGS) * Math.PI * 2;
+    const x = Math.cos(a) * r, z = Math.sin(a) * r;
+    const rim = ringIdx(RINGS, j);
+    const bx = rimBase + j * 2, tx = bx + 1;
+    skirtV[bx * 3] = x; skirtV[bx * 3 + 1] = y; skirtV[bx * 3 + 2] = z;
+    skirtV[tx * 3] = x; skirtV[tx * 3 + 1] = positions[rim * 3 + 1]; skirtV[tx * 3 + 2] = z;
+    const c = colorAt ? colorAt(x, z, height(x, z), 0.05) : '#b7ab8f';
+    _c.set(c);
+    for (let k = 0; k < 2; k++) { skirtCol[(bx + k) * 3] = _c.r; skirtCol[(bx + k) * 3 + 1] = _c.g; skirtCol[(bx + k) * 3 + 2] = _c.b; }
+    skirtUv[(bx) * 2] = j / SEGS; skirtUv[(bx) * 2 + 1] = 0;
+    skirtUv[(tx) * 2] = j / SEGS; skirtUv[(tx) * 2 + 1] = 1;
+    const rj = ringIdx(RINGS, j), rk = ringIdx(RINGS, (j + 1) % SEGS);
+    const b1 = bx, b2 = rimBase + ((j + 1) % SEGS) * 2;
+    idx.push(rj, b1, b2, rj, b2, rk);
+  }
+  // assemble (top grid + skirt)
+  const allPos = new Float32Array(nVerts * 3 + skirtV.length);
+  const allCol = new Float32Array(nVerts * 3 + skirtCol.length);
+  const allUv = new Float32Array(nVerts * 2 + skirtUv.length);
+  allPos.set(positions); allCol.set(colors); allUv.set(uvs);
+  allPos.set(skirtV, nVerts * 3); allCol.set(skirtCol, nVerts * 3); allUv.set(skirtUv, nVerts * 2);
   const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
-  g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array((pos.length / 3) * 2), 2));
+  g.setAttribute('position', new THREE.BufferAttribute(allPos, 3));
+  g.setAttribute('color', new THREE.BufferAttribute(allCol, 3));
+  g.setAttribute('uv', new THREE.BufferAttribute(allUv, 2));
+  g.setIndex(idx);
   g.computeVertexNormals();
-  // push directly into the builder (geo() would overwrite our vertex colours)
-  if (!b.parts.has(mat)) b.parts.set(mat, []);
-  b.parts.get(mat).push(g);
+  const m = mat.clone();
+  m.side = THREE.DoubleSide;
+  if (!b.parts.has(m)) b.parts.set(m, []);
+  b.parts.get(m).push(g);
   return b;
 }

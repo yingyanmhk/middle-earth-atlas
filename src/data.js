@@ -81,7 +81,7 @@ export const CITIES = RAW.map(([id, name, cat, n, motif, mapPos, text], i) => ({
 }));
 
 // Book membership: the six books of The Lord of the Rings + a bonus row for The Hobbit.
-const CHAPTER_SIZES = [5, 3, 3, 3, 4, 3, 3];
+const CHAPTER_SIZES = [5, 3, 4, 3, 4, 3, 3]; // Book III also carries Helm's Deep
 export const CHAPTERS = [
   { roman: 'I', name: 'The Ring Sets Out' },
   { roman: 'II', name: 'The Ring Goes South' },

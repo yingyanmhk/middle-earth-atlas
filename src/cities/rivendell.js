@@ -57,7 +57,7 @@ const h = (x, z) => {
   const bz = HEAD - x;                                             // the head wall
   if (bz > 0) {
     const t = Math.min(1, bz / 2.9);
-    y += 9.6 * t * t * (3 - 2 * t) * (0.72 + 0.28 * Math.exp(-(z * z) / 14));
+    y += 9.6 * t * t * (3 - 2 * t) * Math.exp(-(z * z) / 12);      // tallest at the falls, fading to the flanks
   }
   return Math.max(0.12, y);
 };
@@ -207,10 +207,10 @@ export default function build({ rng, city, accent }) {
   bridge(b, { from: [2.6, h(2.6, 1.15) + 0.1, 1.15], to: [2.6, h(2.6, -0.7) + 0.1, -0.7], w: 1.05, rise: 0.3, color: '#c9c3b4', mat: M.stone, rails: true, segments: 8 });
 
   /* ------------------------------- rocks -------------------------------- */
-  rock(b, { x: 5.0, y: h(5.0, -4.6) - 0.2, z: -4.6, r: 0.65, h: 1.4, color: '#5a6270', rand: rng, detail: 1 });
-  rock(b, { x: 6.5, y: h(6.5, 4.2) - 0.2, z: 4.2, r: 0.6, h: 1.3, color: '#626c7a', rand: rng, detail: 1 });
-  rock(b, { x: -6.6, y: h(-6.6, 0.9), z: 0.9, r: 0.5, h: 0.8, color: '#7a8290', rand: rng, detail: 1 });
-  rock(b, { x: 7.2, y: h(7.2, 0.6), z: 0.6, r: 0.55, h: 1.0, color: '#6d7684', rand: rng, detail: 1 });
+  rock(b, { x: 5.0, y: h(5.0, -4.6) + 0.45 * 1.4, z: -4.6, r: 0.65, h: 1.4, color: '#5a6270', rand: rng, detail: 1 });
+  rock(b, { x: 6.5, y: h(6.5, 4.2) + 0.45 * 1.3, z: 4.2, r: 0.6, h: 1.3, color: '#626c7a', rand: rng, detail: 1 });
+  rock(b, { x: -6.6, y: h(-6.6, 0.9) + 0.45 * 0.8, z: 0.9, r: 0.5, h: 0.8, color: '#7a8290', rand: rng, detail: 1 });
+  rock(b, { x: 7.2, y: h(7.2, 0.6) + 0.45 * 1.0, z: 0.6, r: 0.55, h: 1.0, color: '#6d7684', rand: rng, detail: 1 });
 
   /* ------------------------------- trees -------------------------------- */
   const TREES = [[-1.5, 2.2, 2.3], [-5.5, 1.6, 2.2], [-1.0, -2.6, 2.2], [4.6, -3.7, 2.1], [5.2, 3.6, 2.2], [4.2, 1.3, 2.2]];
@@ -228,7 +228,7 @@ export default function build({ rng, city, accent }) {
   b.box(7.0, 0.25, 1.9, { x: HX, y: 0.56, z: HZ, color: '#d8cfbc', mat: M.stone });
   b.box(7.0, 1.75, 1.86, { x: HX, y: 0.81, z: HZ, color: '#efe4cf', mat: M.stone });
   // gabled slate roof, ridge along X
-  b.geo(ROOFX, { x: HX, y: 2.56, z: HZ, sx: 2.04, sy: 1.0, sz: 7.14, mat: M.flat, color: '#5d6474' });
+  b.geo(ROOFX, { x: HX, y: 2.56, z: HZ, sx: 7.14, sy: 1.0, sz: 2.04, mat: M.flat, color: '#5d6474' });
 
   // a small round tower at the west end, near the falls
   const TX = -6.55;
@@ -351,7 +351,7 @@ export default function build({ rng, city, accent }) {
       const f = s - j;
       const p = FALL[j], q = FALL[j + 1];
       setInst(drops, i,
-        p[0] + (q[0] - p[0]) * f + dropJx[i] * Math.sin(t * 3.2 + dropPh[i] * 9) * 0.28,
+        p[0] + (q[0] - p[0]) * f + dropJx[i] * Math.sin(t * 3.2 + dropPh[i] * 9) * 0.2,
         p[1] + (q[1] - p[1]) * f,
         DB[2] + dropJz[i] * Math.sin(t * 2.4 + dropPh[i] * 7) * 0.22);
     }

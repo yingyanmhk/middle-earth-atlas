@@ -379,7 +379,7 @@ export function makeFloor() {
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 8;
-  const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.92, metalness: 0.0 });
+  const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.92, metalness: 0.0, side: THREE.DoubleSide });
   const mesh = new THREE.Mesh(new THREE.PlaneGeometry(MAP.W, MAP.H), mat);
   mesh.rotation.x = -Math.PI / 2;
   mesh.position.set((MAP.x0 + MAP.x1) / 2, 0, (MAP.z0 + MAP.z1) / 2);
@@ -389,8 +389,8 @@ export function makeFloor() {
 
 /* ---------------------------------------------------------- PLINTHS -- */
 
-const plinthStone = new THREE.MeshStandardMaterial({ color: '#3b3036', roughness: 0.6, metalness: 0.15 });
-const plinthTop = new THREE.MeshStandardMaterial({ color: '#cbb894', roughness: 0.9 });
+const plinthStone = new THREE.MeshStandardMaterial({ color: '#3b3036', roughness: 0.6, metalness: 0.15, side: THREE.DoubleSide });
+const plinthTop = new THREE.MeshStandardMaterial({ color: '#cbb894', roughness: 0.9, side: THREE.DoubleSide });
 const plinthGeo = (() => {
   const pts = [
     [PLINTH_R + 0.6, 0], [PLINTH_R + 0.6, 0.18], [PLINTH_R + 0.25, 0.3], [PLINTH_R + 0.25, PLINTH_H - 0.25],

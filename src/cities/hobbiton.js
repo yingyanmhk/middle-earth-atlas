@@ -63,7 +63,7 @@ export default function build({ rng, city, accent }) {
   }
   // stepping stones across the stream, north of the mill
   for (const sx of [4.3, 4.75, 5.2, 5.65, 6.1]) {
-    b.disc(0.24, { x: sx, y: WATER_Y + 0.06, z: -0.4, color: '#9a9184', mat: M.stone, seg: 10 });
+    b.cyl(0.24, 0.26, 0.09, { x: sx, y: WATER_Y + 0.045, z: -0.4, color: '#9a9184', mat: M.stone, seg: 10 });
   }
 
   /* ------------------------------ the Hill ------------------------------- */
@@ -102,7 +102,7 @@ export default function build({ rng, city, accent }) {
     // a little garden in front
     const gx = x + Math.cos(ry) * (r * 1.3), gz = z + Math.sin(ry) * (r * 1.3);
     const gy = h(gx, gz) + 0.02;
-    b.box(1.7, 0.04, 1.1, { x: gx, y: gy, z: gz, ry, color: '#6d5a3e', mat: pathMat });
+    b.box(1.7, 0.12, 1.1, { x: gx, y: gy, z: gz, ry, color: '#6d5a3e', mat: pathMat });
     for (let row = 0; row < 3; row++) {
       b.box(1.4, 0.06, 0.16, { x: gx + Math.cos(ry) * 0.12, y: gy + 0.05, z: gz + Math.sin(ry) * 0.12 + Math.sin(ry) * (row - 1) * 0.26 + Math.cos(ry) * (row - 1) * 0.26, ry, color: rng.pick(['#5f7a4c', '#71905a', '#557a3e']), mat: M.flat });
     }
