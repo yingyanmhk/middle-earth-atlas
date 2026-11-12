@@ -137,7 +137,8 @@ export default function build({ rng, city, accent }) {
   /* ------------------------- fire in the crater ------------------------- */
   b.disc(0.4, { x: 0, y: CRATER_Y + 0.02, z: 0, mat: M.glow, color: '#ff5a1a', glow: 0.85, seg: 20 });
   b.ring(0.62, 0.85, { x: 0, y: CRATER_Y + 0.06, z: 0, mat: M.glow, color: '#ff6a1a', glow: 1.1, seg: 24 });
-  b.torus(1.05, 0.04, { x: 0, y: 12.85, z: 0, mat: M.glow, color: '#ff4a1a', glow: 1.0, rseg: 5, tseg: 26 });
+  // NB: three r186 builds TorusGeometry in the XY plane, so rotate it flat
+  b.geo(new THREE.TorusGeometry(1.05, 0.04, 5, 26).rotateX(Math.PI / 2), { x: 0, y: 12.85, z: 0, mat: M.glow, color: '#ff4a1a', glow: 1.0 });
 
   /* --------------------- the door of fire (Sammath Naur) ----------------- */
   b.push(DOOR);
@@ -235,8 +236,10 @@ export default function build({ rng, city, accent }) {
     const m = new THREE.Mesh(new THREE.SphereGeometry(rng.range(0.8, 1.3), 10, 8), ashMat.clone());
     m.scale.y = 0.24;
     m.castShadow = m.receiveShadow = false;
+    const az0 = rng.range(0, Math.PI * 2), rr = rng.range(7.6, 9.4);
+    m.position.set(Math.cos(az0) * rr, 0.3, Math.sin(az0) * rr);
     object.add(m);
-    ashDrift.push({ m, az0: rng.range(0, Math.PI * 2), rr: rng.range(7.6, 9.4), sp: rng.range(0.015, 0.03), ph: rng.range(0, 6) });
+    ashDrift.push({ m, az0, rr, sp: rng.range(0.015, 0.03), ph: rng.range(0, 6) });
   }
 
   /* --------------------------- the live fires ---------------------------- */

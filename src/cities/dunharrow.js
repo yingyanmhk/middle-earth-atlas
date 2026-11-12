@@ -153,18 +153,18 @@ export default function build({ rng, city, accent }) {
     b.box(2.0, 4.2, 1.9, { x: sx, y: h(sx, -8.0), z: -8.0, color: rng.pick(ROCK_C), mat: M.flat });
     rock(b, { x: sx, z: -8.0, y: h(sx, -8.0) + 4.22, r: 1.0, h: 1.9, color: rng.pick(ROCK_D), rand: rng, detail: 1 });
   }
-  // the tall blocky tiers of the cliff wall behind
-  const TIER1 = [[-5.1, 5.5], [-3.1, 6.0], [-1.1, 5.2], [1.3, 5.4], [3.3, 6.2], [5.3, 5.6]];
-  const TIER2 = [[-4.3, 8.5], [-1.6, 9.0], [1.0, 9.5], [3.4, 8.2]];
-  const TIER3 = [[-2.2, 9.6], [0, 10.2], [2.2, 9.6]];
-  for (const [x, hgt] of TIER1) b.box(1.9, hgt, 1.7, { x, y: h(x, -8.7), z: -8.7, color: rng.pick(ROCK_C), mat: M.flat });
-  for (const [x, hgt] of TIER2) b.box(2.5, hgt, 2.0, { x, y: h(x, -9.5), z: -9.5, color: rng.pick(ROCK_D), mat: M.flat });
-  for (const [x, hgt] of TIER3) b.box(2.2, hgt, 1.6, { x, y: h(x, -9.9), z: -9.9, color: rng.pick(ROCK_D), mat: M.flat });
-  // jagged boulders capping the tiers
+  // the blocky tiers of the cliff wall behind, rising to a peak
+  const TIER1 = [[-3.6, 5.2], [-1.5, 5.6], [0.4, 5.0], [2.0, 5.4], [3.6, 5.8]];
+  const TIER2 = [[-1.8, 8.4], [-0.3, 8.8], [1.3, 8.2]];
+  const TIER3 = [[-0.9, 9.2], [0.3, 9.6]];
+  for (const [x, hgt] of TIER1) b.box(1.8, hgt, 1.5, { x, y: h(x, -8.5), z: -8.5, color: rng.pick(ROCK_C), mat: M.flat });
+  for (const [x, hgt] of TIER2) b.box(2.0, hgt, 1.0, { x, y: h(x, -9.4), z: -9.4, color: rng.pick(ROCK_D), mat: M.flat });
+  for (const [x, hgt] of TIER3) b.box(1.6, hgt, 0.9, { x, y: h(x, -9.7), z: -9.7, color: rng.pick(ROCK_D), mat: M.flat });
+  // boulders capping the tiers (kept small so nothing overhangs the terrain)
   for (const [x, z, baseH, r, hgt] of [
-    [-3.1, -8.7, 6.0, 1.1, 2.0], [1.3, -8.7, 5.4, 1.2, 2.2], [5.3, -8.7, 5.6, 1.0, 1.8],
-    [-1.6, -9.5, 9.0, 1.4, 2.6], [3.4, -9.5, 8.2, 1.3, 2.4],
-    [0, -9.9, 10.2, 1.5, 1.6],
+    [-1.5, -8.5, 5.6, 1.0, 1.9], [2.0, -8.5, 5.4, 1.0, 1.9],
+    [-0.3, -9.4, 8.8, 0.7, 1.6], [1.3, -9.4, 8.2, 0.7, 1.6],
+    [0.3, -9.7, 9.6, 0.5, 1.2],
   ]) {
     rock(b, { x, z, y: h(x, z) + baseH + 0.02, r, h: hgt, color: rng.pick(ROCK_D), rand: rng, detail: 1 });
   }
@@ -238,10 +238,11 @@ export default function build({ rng, city, accent }) {
 
   /* ----------------------- scattered rocks on the plain ------------------- */
   for (const [rx, rz, rr, rh] of [
-    [-6.4, -1.9, 0.6, 1.1], [6.6, -0.6, 0.6, 1.1], [3.6, 8.2, 0.5, 0.9], [-5.3, 8.4, 0.55, 1.0],
+    [-6.4, -1.9, 0.6, 1.1], [6.6, -0.6, 0.6, 1.1], [3.6, 8.2, 0.5, 0.9], [-3.3, 8.1, 0.5, 0.9],
     [1.8, 8.3, 0.5, 0.9], [-2.1, 8.5, 0.45, 0.85], [6.9, 2.3, 0.5, 0.95],
   ]) {
-    rock(b, { x: rx, z: rz, y: Math.max(h(rx, rz) + 0.05, 0.4 * rh + 0.03), r: rr, h: rh, color: rng.pick(ROCK_C), rand: rng, detail: 1 });
+    // rock()'s icosahedron dips to y - 0.5875*h; clamp so nothing goes below y=0
+    rock(b, { x: rx, z: rz, y: Math.max(h(rx, rz) + 0.05, 0.6 * rh + 0.03), r: rr, h: rh, color: rng.pick(ROCK_C), rand: rng, detail: 1 });
   }
 
   /* ------------------------------ static build --------------------------- */
@@ -283,6 +284,7 @@ export default function build({ rng, city, accent }) {
     const m = new THREE.Mesh(new THREE.SphereGeometry(0.14, 8, 6), mistMat.clone());
     m.visible = false;
     m.castShadow = m.receiveShadow = false;
+    m.userData.mist = true;
     object.add(m);
     mist.push({ m, off: i / 10 });
   }
