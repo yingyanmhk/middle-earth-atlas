@@ -798,4 +798,5 @@ if (!SOLO) {
 boot();
 
 // expose for debugging
+window.THREE = THREE;
 window.__app = { renderer, scene, camera, controls, entries, focusCity, setLayout, overview, visitPavilion, visitRing, flyTo, pavHolder, ring, state };
