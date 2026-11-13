@@ -56,13 +56,15 @@ export default function build({ rng, city, accent }) {
     { x: -4.4, z: 5.0, H: 5.5 },  { x: 4.6, z: 5.2, H: 5.5 },
   ];
 
+  // a colour is either a hex string or an int; normalise to '#rrggbb'
+  const toHex = (c) => (typeof c === 'number' ? '#' + Math.round(c).toString(16).padStart(6, '0') : c);
   const colorAt = (x, z, y, up) => {
     const j = hash2(Math.round(x * 2.7), Math.round(z * 2.7), 43);
     // deep green-black forest floor with litter of dead leaves
     const floor = Math.round(0x2f452f + (j - 0.5) * 18);
     const l = hash2(Math.round(x * 3.4), Math.round(z * 3.4), 61);
     let c;
-    if (l > 0.88 && y < 1.4) c = rng ? ['#4a3a28', '#3f3526', '#5a4a30', '#332c20'][Math.floor(l * 4) % 4] : '#4a3a28';
+    if (l > 0.88 && y < 1.4) c = ['#4a3a28', '#3f3526', '#5a4a30', '#332c20'][Math.floor(l * 4) % 4];
     else if (up < 0.6 && y > 1.15) c = Math.round(0x232f22 + (j - 0.5) * 12);   // the hill's steep face
     else if (y > 1.75) c = Math.round(0x262c24 + (j - 0.5) * 10);              // rocky crown
     else if (Math.abs(z - WATER_Z) < 0.75 && y < 0.5) c = Math.round(0x1c2a1c + (j - 0.5) * 12); // wet banks
@@ -71,8 +73,8 @@ export default function build({ rng, city, accent }) {
     let md2 = 1e9;
     for (const t of TREES) { const dd = (t.x - x) ** 2 + (t.z - z) ** 2; if (dd < md2) md2 = dd; }
     const md = Math.sqrt(md2);
-    if (md < 1.2) c = mixHex('#' + c.toString(16).padStart(6, '0'), '#1d2a1a', 0.62 * (1 - md / 1.2));
-    return '#' + c.toString(16).padStart(6, '0');
+    if (md < 1.2) c = mixHex(toHex(c), '#1d2a1a', 0.62 * (1 - md / 1.2));
+    return toHex(c);
   };
   terrainDisc(b, { r: 10.5, rings: 52, segs: 88, height: h, colorAt, mat: M.stone, seed: 29 });
 
@@ -85,9 +87,15 @@ export default function build({ rng, city, accent }) {
       sx: 1.4, sy: 0.55, color: rng.pick(['#1a1d18', '#23251e', '#14161a']), mat: M.smooth, seg: 7,
     });
   }
-  // wet rocks on the banks
-  rock(b, { x: -6.3, y: h(-6.3, 4.55) + 0.02, z: 4.55, r: 0.34, h: 0.62, color: '#3a3f33', rand: rng });
-  rock(b, { x: 6.5, y: h(6.5, 4.5) + 0.02, z: 4.5, r: 0.3, h: 0.55, color: '#3a3f33', rand: rng });
+  // wet rocks on the banks — rock() sinks 0.4*h below its y, so lift the base
+  // onto the ground to keep everything above y=0
+  const sitRock = (x, z, r, rh, color) => {
+    const gy = Math.max(h(x, z), 0.06);
+    rock(b, { x, y: gy + rh * 0.4 + 0.03, z, r, h: rh, color, rand: rng });
+    return gy;
+  };
+  sitRock(-6.3, 4.55, 0.34, 0.62, '#3a3f33');
+  sitRock(6.5, 4.5, 0.3, 0.55, '#3a3f33');
 
   /* ---------------------- the path the forest swallows ------------------- */
   const PATH = [
@@ -279,8 +287,8 @@ export default function build({ rng, city, accent }) {
   }
   // scattered rocks and their moss
   for (const [rx, rz, rr, rh] of [[-4.8, -4.2, 0.4, 0.8], [5.0, -4.7, 0.35, 0.7], [-3.4, 4.4, 0.3, 0.6]]) {
-    rock(b, { x: rx, y: h(rx, rz) + 0.02, z: rz, r: rr, h: rh, color: rng.pick(['#33352c', '#3a3d33', '#2e3128']), rand: rng });
-    b.geo(ICO0, { x: rx, y: h(rx, rz) + rh * 0.55, z: rz, sx: rr * 0.6, sy: rr * 0.4, sz: rr * 0.6, color: rng.chance(0.5) ? accent : C.moss, mat: M.flat, ry: rng.range(0, 6) });
+    const gy = sitRock(rx, rz, rr, rh, rng.pick(['#33352c', '#3a3d33', '#2e3128']));
+    b.geo(ICO0, { x: rx, y: gy + rh * 1.05 + 0.04, z: rz, sx: rr * 0.6, sy: rr * 0.4, sz: rr * 0.6, color: rng.chance(0.5) ? accent : C.moss, mat: M.flat, ry: rng.range(0, 6) });
   }
 
   /* --------------------------- the elf sentry ---------------------------- */
