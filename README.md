@@ -4,6 +4,8 @@ A three.js atlas of the places of J.R.R. Tolkien's *The Lord of the Rings*. Ever
 from Hobbiton to the fires of Mount Doom — is a procedurally generated miniature diorama standing
 on a painted parchment map of Middle-earth.
 
+**Live:** <https://yingyanmhk.github.io/middle-earth-atlas/>
+
 ```sh
 pnpm install
 pnpm dev        # http://127.0.0.1:5199
