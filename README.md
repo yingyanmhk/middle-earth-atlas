@@ -37,6 +37,14 @@ Deep links: `/#minas-tirith` opens a place. `/?solo=hobbiton&view=front` renders
 The place texts and interludes are paraphrases written for this atlas, not quotations from the
 book (except for a few short phrases). Read the book itself.
 
+## Deploy
+
+```sh
+pnpm build          # static site in dist/ (relative base: deployable anywhere)
+```
+The repo includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) that builds and
+publishes to GitHub Pages on every push to `main`.
+
 ## Credits
 
 Architecture and visual approach inspired by *[Invisible Cities — an atlas](https://github.com/stared/invisible-cities-opus-5.5)*

@@ -192,14 +192,13 @@ export default function build({ rng, city, accent }) {
     const bend = rng.range(-0.06, 0.06);
     lines.path([[x, WATER_Y + 0.005, z - w / 2], [x + bend, WATER_Y + 0.005, z], [x, WATER_Y + 0.005, z + w / 2]], '#9fc2d4', 0.75);
   }
-  lines.rope([-3.0, 0.46, -2.3], [-3.2, 0.88, -2.85], 0.22, '#8a7a5a', 6);
-  lines.rope([-2.6, 0.46, -1.1], [-2.4, 0.88, -0.55], 0.22, '#8a7a5a', 6);
-  lines.rope([-3.2, 0.46, -1.7], [-4.3, 0.72, -3.2], 0.26, '#8a7a5a', 6);
+  lines.rope([-3.2, 0.46, -2.0], [-3.55, 0.88, -1.5], 0.2, '#8a7a5a', 6);
+  lines.rope([-3.2, 0.46, -1.4], [-3.55, 0.88, 0.2], 0.2, '#8a7a5a', 6);
   object.add(lines.build());
 
   /* ------------------------------- the ships ----------------------------- */
   const SHIPS = [];
-  for (const [sx, sz, ph] of [[-3.2, -3.4, 0.6], [-3.2, 0.0, 2.9]]) {
+  for (const [sx, sz, ph] of [[-4.9, -2.2, 0.6], [-4.9, 0.9, 2.9]]) {
     const sb = new Builder();
     buildShip(sb);
     const group = new THREE.Group();
